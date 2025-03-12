@@ -55,17 +55,22 @@ fi
 # Start Docker daemon if needed
 if ! docker info &> /dev/null; then
     echo "Starting Docker daemon..."
+    # Add current user to docker group
+    sudo groupadd -f docker
+    sudo usermod -aG docker $USER
+    # Start Docker daemon
     sudo service docker start || (sudo dockerd > /tmp/docker.log 2>&1 & sleep 5)
     # Wait for Docker to be ready (max 30 seconds)
     for i in {1..30}; do
-        if docker info &> /dev/null; then
+        if sudo docker info &> /dev/null; then
             break
         fi
         echo "Waiting for Docker to start... ($i/30)"
         sleep 1
     done
-    if ! docker info &> /dev/null; then
+    if ! sudo docker info &> /dev/null; then
         echo "Error: Docker failed to start"
+        cat /tmp/docker.log
         exit 1
     fi
 fi
@@ -75,7 +80,7 @@ if [ ! -f ".docker-cache/built" ]; then
     echo "Building Docker image..."
     cd camelAiOwl/.container
     chmod +x build_docker.sh run_in_docker.sh check_docker.sh
-    ./build_docker.sh
+    sudo DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 ./build_docker.sh
     cd ../..
 fi
 
@@ -84,10 +89,10 @@ if [ "$1" == "web" ]; then
     echo "Starting web interface..."
     cd camelAiOwl/.container
     chmod +x run_in_docker.sh
-    ./run_in_docker.sh ../run_app_en.py
+    sudo ./run_in_docker.sh ../run_app_en.py
 else
     echo "Starting CLI interface..."
     cd camelAiOwl/.container
     chmod +x run_in_docker.sh
-    ./run_in_docker.sh ../run.py "What is artificial intelligence?"
+    sudo ./run_in_docker.sh ../run.py "What is artificial intelligence?"
 fi
