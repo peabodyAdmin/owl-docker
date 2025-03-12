@@ -55,21 +55,22 @@ fi
 # Start Docker daemon if needed
 if ! docker info &> /dev/null; then
     echo "Starting Docker daemon..."
-    sudo dockerd > /tmp/docker.log 2>&1 &
+    sudo service docker start || sudo dockerd > /tmp/docker.log 2>&1 &
     sleep 5
 fi
 
 # Build Docker image if needed
 if [ ! -f ".docker-cache/built" ]; then
     echo "Building Docker image..."
-    ./build_docker.sh
+    cd camelAiOwl/.container && ./build_docker.sh
+    cd ../..
 fi
 
 # Run the script
 if [ "$1" == "web" ]; then
     echo "Starting web interface..."
-    ./run_in_docker.sh camelAiOwl/run_app_en.py
+    cd camelAiOwl/.container && ./run_in_docker.sh run_app_en.py
 else
     echo "Starting CLI interface..."
-    ./run_in_docker.sh camelAiOwl/run.py "What is artificial intelligence?"
+    cd camelAiOwl/.container && ./run_in_docker.sh run.py "What is artificial intelligence?"
 fi
