@@ -9,13 +9,11 @@ if [ ! -f .env ]; then
 fi
 
 # Initialize and update submodule if needed
-if [ ! -d "camelAiOwl" ] || [ ! -f "camelAiOwl/.git" ]; then
-    echo "Initializing and updating git submodule..."
-    git submodule init
-    git submodule update --init --recursive
+if [ ! -d "camelAiOwl" ]; then
+    echo "Cloning camelAiOwl repository..."
+    git clone https://github.com/peabodyAdmin/camelAiOwl.git
     if [ ! -d "camelAiOwl" ]; then
-        echo "Error: Failed to initialize submodule. Please clone with --recurse-submodules"
-        echo "Example: git clone --recurse-submodules https://github.com/peabodyAdmin/owl-docker.git"
+        echo "Error: Failed to clone camelAiOwl repository"
         exit 1
     fi
 fi
