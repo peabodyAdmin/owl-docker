@@ -45,44 +45,27 @@ if ! command -v docker &> /dev/null; then
     fi
 fi
 
-# Create a dedicated user for OWL
-OWL_USER="owl_user"
-OWL_HOME="/home/$OWL_USER"
-if ! id "$OWL_USER" &>/dev/null; then
-    echo "Creating dedicated user for OWL..."
-    sudo useradd -m -s /bin/bash "$OWL_USER"
-    sudo usermod -L "$OWL_USER"  # Lock password
-fi
-
 # Set up isolated environment
-WORK_DIR="$OWL_HOME/owl_workspace"
-sudo mkdir -p "$WORK_DIR"
-sudo chown "$OWL_USER:$OWL_USER" "$WORK_DIR"
-sudo chmod 700 "$WORK_DIR"
+WORK_DIR="$HOME/Library/Application Support/owl_workspace"
+mkdir -p "$WORK_DIR"
+chmod 700 "$WORK_DIR"
 
 # Copy files to workspace
-sudo cp -r camelAiOwl "$WORK_DIR/"
-sudo cp .env "$WORK_DIR/camelAiOwl/"
-sudo chown -R "$OWL_USER:$OWL_USER" "$WORK_DIR/camelAiOwl"
+cp -r camelAiOwl "$WORK_DIR/"
+cp .env "$WORK_DIR/camelAiOwl/"
 
 # Install Python dependencies in isolated environment
 if [ ! -d "$WORK_DIR/camelAiOwl/.venv" ]; then
     echo "Installing Python dependencies..."
-    sudo -u "$OWL_USER" bash -c "cd $WORK_DIR/camelAiOwl && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt"
-fi
-
-# Set up network isolation (optional)
-if command -v firejail >/dev/null 2>&1; then
-    WRAPPER="firejail --net=eth0 --dns=1.1.1.1 --private=$WORK_DIR --noroot"
-else
-    WRAPPER="sudo -u $OWL_USER"
+    cd "$WORK_DIR/camelAiOwl" && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt
+    cd - > /dev/null
 fi
 
 # Run the script
 if [ "$1" == "web" ]; then
     echo "Starting web interface..."
-    $WRAPPER bash -c "cd $WORK_DIR/camelAiOwl && source .venv/bin/activate && python run_app_en.py"
+    cd "$WORK_DIR/camelAiOwl" && source .venv/bin/activate && python run_app_en.py
 else
     echo "Starting CLI interface..."
-    $WRAPPER bash -c "cd $WORK_DIR/camelAiOwl && source .venv/bin/activate && python run.py \"What is artificial intelligence?\""
+    cd "$WORK_DIR/camelAiOwl" && source .venv/bin/activate && python run.py "What is artificial intelligence?"
 fi
