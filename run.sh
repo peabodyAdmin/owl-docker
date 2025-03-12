@@ -21,8 +21,10 @@ fi
 # Copy .env to camelAiOwl directory
 cp .env camelAiOwl/.env
 
-# Change to camelAiOwl directory and run docker-compose
-cd camelAiOwl
+# Copy Docker files
+cp camelAiOwl/.container/Dockerfile .
+cp camelAiOwl/.container/docker-compose.yml .
+cp camelAiOwl/.container/.dockerignore .
 
 # Check if user wants CLI or web interface
 if [ "$1" == "web" ]; then
