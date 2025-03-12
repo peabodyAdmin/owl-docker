@@ -57,32 +57,21 @@ if ! docker info &> /dev/null; then
     echo "Starting Docker daemon..."
     # Install required packages
     sudo apt-get update
-    sudo apt-get install -y fuse-overlayfs iptables
-    # Configure Docker daemon
-    sudo mkdir -p /etc/docker
-    echo '{
-        "storage-driver": "fuse-overlayfs",
-        "iptables": true,
-        "ip-forward": true,
-        "bridge": "none",
-        "features": {
-            "buildkit": true
-        }
-    }' | sudo tee /etc/docker/daemon.json > /dev/null
-    # Add current user to docker group
-    sudo groupadd -f docker
-    sudo usermod -aG docker $USER
+    sudo apt-get install -y fuse-overlayfs iptables dbus-user-session
+    # Configure rootless Docker
+    sudo loginctl enable-linger $USER
+    dockerd-rootless-setuptool.sh install
     # Start Docker daemon
-    sudo service docker start || (sudo dockerd > /tmp/docker.log 2>&1 & sleep 5)
+    dockerd-rootless.sh > /tmp/docker.log 2>&1 &
     # Wait for Docker to be ready (max 30 seconds)
     for i in {1..30}; do
-        if sudo docker info &> /dev/null; then
+        if docker info &> /dev/null; then
             break
         fi
         echo "Waiting for Docker to start... ($i/30)"
         sleep 1
     done
-    if ! sudo docker info &> /dev/null; then
+    if ! docker info &> /dev/null; then
         echo "Error: Docker failed to start"
         cat /tmp/docker.log
         exit 1
