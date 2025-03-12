@@ -55,13 +55,19 @@ fi
 # Start Docker daemon if needed
 if ! docker info &> /dev/null; then
     echo "Starting Docker daemon..."
-    sudo service docker start || sudo dockerd > /tmp/docker.log 2>&1 &
-    sleep 5
-    # Wait for Docker to be ready
-    while ! docker info &> /dev/null; do
-        echo "Waiting for Docker to start..."
+    sudo service docker start || (sudo dockerd > /tmp/docker.log 2>&1 & sleep 5)
+    # Wait for Docker to be ready (max 30 seconds)
+    for i in {1..30}; do
+        if docker info &> /dev/null; then
+            break
+        fi
+        echo "Waiting for Docker to start... ($i/30)"
         sleep 1
     done
+    if ! docker info &> /dev/null; then
+        echo "Error: Docker failed to start"
+        exit 1
+    fi
 fi
 
 # Build Docker image if needed
