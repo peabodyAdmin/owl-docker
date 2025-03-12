@@ -21,16 +21,21 @@ fi
 # Copy .env to camelAiOwl directory
 cp .env camelAiOwl/.env
 
-# Copy Docker files
-cp camelAiOwl/.container/Dockerfile .
-cp camelAiOwl/.container/docker-compose.yml .
-cp camelAiOwl/.container/.dockerignore .
+# Copy Docker files and scripts
+cp -r camelAiOwl/.container/* .
+chmod +x build_docker.sh run_in_docker.sh check_docker.sh
 
-# Check if user wants CLI or web interface
+# Build Docker image if needed
+if [ ! -f ".docker-cache/built" ]; then
+    echo "Building Docker image..."
+    ./build_docker.sh
+fi
+
+# Run the script
 if [ "$1" == "web" ]; then
     echo "Starting web interface..."
-    docker-compose up owl-web
+    ./run_in_docker.sh run_app_en.py
 else
     echo "Starting CLI interface..."
-    docker-compose run --rm owl-cli
+    ./run_in_docker.sh run.py
 fi
