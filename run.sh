@@ -58,20 +58,21 @@ if ! docker info &> /dev/null; then
     # Install required packages
     sudo apt-get update
     sudo apt-get install -y fuse-overlayfs iptables dbus-user-session
-    # Configure rootless Docker
-    sudo loginctl enable-linger $USER
-    dockerd-rootless-setuptool.sh install
+    # Configure environment for rootless Docker
+    export XDG_RUNTIME_DIR=/tmp/docker-runtime
+    mkdir -p $XDG_RUNTIME_DIR
+    chmod 700 $XDG_RUNTIME_DIR
     # Start Docker daemon
-    dockerd-rootless.sh > /tmp/docker.log 2>&1 &
+    sudo dockerd > /tmp/docker.log 2>&1 &
     # Wait for Docker to be ready (max 30 seconds)
     for i in {1..30}; do
-        if docker info &> /dev/null; then
+        if sudo docker info &> /dev/null; then
             break
         fi
         echo "Waiting for Docker to start... ($i/30)"
         sleep 1
     done
-    if ! docker info &> /dev/null; then
+    if ! sudo docker info &> /dev/null; then
         echo "Error: Docker failed to start"
         cat /tmp/docker.log
         exit 1
