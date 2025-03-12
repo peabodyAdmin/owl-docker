@@ -55,6 +55,20 @@ fi
 # Start Docker daemon if needed
 if ! docker info &> /dev/null; then
     echo "Starting Docker daemon..."
+    # Install required packages
+    sudo apt-get update
+    sudo apt-get install -y fuse-overlayfs iptables
+    # Configure Docker daemon
+    sudo mkdir -p /etc/docker
+    echo '{
+        "storage-driver": "fuse-overlayfs",
+        "iptables": true,
+        "ip-forward": true,
+        "bridge": "none",
+        "features": {
+            "buildkit": true
+        }
+    }' | sudo tee /etc/docker/daemon.json > /dev/null
     # Add current user to docker group
     sudo groupadd -f docker
     sudo usermod -aG docker $USER
