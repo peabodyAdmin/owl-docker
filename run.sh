@@ -45,74 +45,25 @@ if ! command -v docker &> /dev/null; then
     fi
 fi
 
-# Check if Docker Compose is installed
-if ! command -v docker-compose &> /dev/null; then
-    echo "Docker Compose not found. Installing Docker Compose..."
-    sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.5/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
-    sudo chmod +x /usr/local/bin/docker-compose
-fi
-
-# Start Docker daemon if needed
-if ! docker info &> /dev/null; then
-    echo "Starting Docker daemon..."
-    # Install required packages
-    sudo apt-get update
-    sudo apt-get install -y fuse-overlayfs iptables dbus-user-session
-    # Configure environment for rootless Docker
-    export XDG_RUNTIME_DIR=/tmp/docker-runtime
-    mkdir -p $XDG_RUNTIME_DIR
-    chmod 700 $XDG_RUNTIME_DIR
-    # Configure Docker daemon
-    sudo mkdir -p /etc/docker
-    echo '{
-        "storage-driver": "vfs",
-        "iptables": false,
-        "ip-forward": false,
-        "bridge": "none",
-        "features": {
-            "buildkit": true
-        },
-        "data-root": "/tmp/docker-data",
-        "exec-root": "/tmp/docker-exec"
-    }' | sudo tee /etc/docker/daemon.json > /dev/null
-    # Create Docker directories
-    sudo mkdir -p /tmp/docker-data /tmp/docker-exec
-    sudo chmod 777 /tmp/docker-data /tmp/docker-exec
-    # Start Docker daemon
-    sudo dockerd > /tmp/docker.log 2>&1 &
-    # Wait for Docker to be ready (max 30 seconds)
-    for i in {1..30}; do
-        if sudo docker info &> /dev/null; then
-            break
-        fi
-        echo "Waiting for Docker to start... ($i/30)"
-        sleep 1
-    done
-    if ! sudo docker info &> /dev/null; then
-        echo "Error: Docker failed to start"
-        cat /tmp/docker.log
-        exit 1
-    fi
-fi
-
-# Build Docker image if needed
-if [ ! -f ".docker-cache/built" ]; then
-    echo "Building Docker image..."
-    cd camelAiOwl/.container
-    chmod +x build_docker.sh run_in_docker.sh check_docker.sh
-    sudo DOCKER_BUILDKIT=1 COMPOSE_DOCKER_CLI_BUILD=1 ./build_docker.sh
-    cd ../..
+# Install Python dependencies
+if [ ! -d "camelAiOwl/.venv" ]; then
+    echo "Installing Python dependencies..."
+    cd camelAiOwl
+    python3 -m venv .venv
+    source .venv/bin/activate
+    pip install -r requirements.txt
+    cd ..
 fi
 
 # Run the script
 if [ "$1" == "web" ]; then
     echo "Starting web interface..."
-    cd camelAiOwl/.container
-    chmod +x run_in_docker.sh
-    sudo OPENAI_API_KEY=$OPENAI_API_KEY ./run_in_docker.sh ../run_app_en.py
+    cd camelAiOwl
+    source .venv/bin/activate
+    python run_app_en.py
 else
     echo "Starting CLI interface..."
-    cd camelAiOwl/.container
-    chmod +x run_in_docker.sh
-    sudo OPENAI_API_KEY=$OPENAI_API_KEY ./run_in_docker.sh ../run.py "What is artificial intelligence?"
+    cd camelAiOwl
+    source .venv/bin/activate
+    python run.py "What is artificial intelligence?"
 fi
