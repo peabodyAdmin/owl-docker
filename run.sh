@@ -65,7 +65,7 @@ if ! docker info &> /dev/null; then
     # Configure Docker daemon
     sudo mkdir -p /etc/docker
     echo '{
-        "storage-driver": "fuse-overlayfs",
+        "storage-driver": "vfs",
         "iptables": false,
         "ip-forward": false,
         "bridge": "none",
@@ -109,10 +109,10 @@ if [ "$1" == "web" ]; then
     echo "Starting web interface..."
     cd camelAiOwl/.container
     chmod +x run_in_docker.sh
-    sudo ./run_in_docker.sh ../run_app_en.py
+    sudo OPENAI_API_KEY=$OPENAI_API_KEY ./run_in_docker.sh ../run_app_en.py
 else
     echo "Starting CLI interface..."
     cd camelAiOwl/.container
     chmod +x run_in_docker.sh
-    sudo ./run_in_docker.sh ../run.py "What is artificial intelligence?"
+    sudo OPENAI_API_KEY=$OPENAI_API_KEY ./run_in_docker.sh ../run.py "What is artificial intelligence?"
 fi
