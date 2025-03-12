@@ -8,11 +8,14 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-# Clone camelAiOwl if not present
-if [ ! -d "camelAiOwl" ]; then
-    echo "Cloning camelAiOwl repository..."
-    git clone https://github.com/CAMEL-AI-org/camelAiOwl.git
+# Initialize and update submodule if needed
+if [ ! -f "camelAiOwl/.git" ]; then
+    echo "Initializing git submodule..."
+    git submodule init
 fi
+
+echo "Updating git submodule..."
+git submodule update
 
 # Copy .env to camelAiOwl directory
 cp .env camelAiOwl/.env
