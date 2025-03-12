@@ -62,6 +62,22 @@ if ! docker info &> /dev/null; then
     export XDG_RUNTIME_DIR=/tmp/docker-runtime
     mkdir -p $XDG_RUNTIME_DIR
     chmod 700 $XDG_RUNTIME_DIR
+    # Configure Docker daemon
+    sudo mkdir -p /etc/docker
+    echo '{
+        "storage-driver": "fuse-overlayfs",
+        "iptables": false,
+        "ip-forward": false,
+        "bridge": "none",
+        "features": {
+            "buildkit": true
+        },
+        "data-root": "/tmp/docker-data",
+        "exec-root": "/tmp/docker-exec"
+    }' | sudo tee /etc/docker/daemon.json > /dev/null
+    # Create Docker directories
+    sudo mkdir -p /tmp/docker-data /tmp/docker-exec
+    sudo chmod 777 /tmp/docker-data /tmp/docker-exec
     # Start Docker daemon
     sudo dockerd > /tmp/docker.log 2>&1 &
     # Wait for Docker to be ready (max 30 seconds)
