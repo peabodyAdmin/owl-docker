@@ -46,7 +46,7 @@ if ! command -v docker &> /dev/null; then
 fi
 
 # Set up isolated environment
-WORK_DIR="${HOME}/Library/Application Support/owl_workspace"
+WORK_DIR="${HOME}/Library/owl_workspace"
 mkdir -p "${WORK_DIR}"
 chmod 700 "${WORK_DIR}"
 
