@@ -45,31 +45,22 @@ if ! command -v docker &> /dev/null; then
     fi
 fi
 
-# Set up isolated environment
-WORK_DIR="${HOME}/Library/owl_workspace"
-mkdir -p "${WORK_DIR}"
-chmod 700 "${WORK_DIR}"
-
 # Clone repository if needed
-if [ ! -d "${WORK_DIR}/camelAiOwl" ]; then
+if [ ! -d "camelAiOwl" ]; then
     echo "Cloning OWL repository..."
-    git clone https://github.com/camel-ai/owl.git "${WORK_DIR}/camelAiOwl"
+    git clone https://github.com/camel-ai/owl.git camelAiOwl
 fi
 
 # Copy environment file
-cp .env "${WORK_DIR}/camelAiOwl/"
+cp .env camelAiOwl/
 
-# Install Python dependencies in isolated environment
-if [ ! -d "${WORK_DIR}/camelAiOwl/.venv" ]; then
-    echo "Installing Python dependencies..."
-    (cd "${WORK_DIR}/camelAiOwl" && python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt)
-fi
+# Build and run Docker container
+cd camelAiOwl/.container
 
-# Run the script
 if [ "$1" == "web" ]; then
     echo "Starting web interface..."
-    (cd "${WORK_DIR}/camelAiOwl" && source .venv/bin/activate && python run_app_en.py)
+    ./build_docker.sh && ./run_in_docker.sh ../run_app_en.py
 else
     echo "Starting CLI interface..."
-    (cd "${WORK_DIR}/camelAiOwl" && source .venv/bin/activate && python run.py "What is artificial intelligence?")
+    ./build_docker.sh && ./run_in_docker.sh ../run.py "What is artificial intelligence?"
 fi
