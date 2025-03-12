@@ -8,12 +8,12 @@ if [ ! -f .env ]; then
     exit 1
 fi
 
-# Initialize and update submodule if needed
+# Clone OWL repository if needed
 if [ ! -d "camelAiOwl" ]; then
-    echo "Cloning camelAiOwl repository..."
-    git clone https://github.com/peabodyAdmin/camelAiOwl.git
+    echo "Cloning OWL repository..."
+    git clone https://github.com/camel-ai/owl.git camelAiOwl
     if [ ! -d "camelAiOwl" ]; then
-        echo "Error: Failed to clone camelAiOwl repository"
+        echo "Error: Failed to clone OWL repository"
         exit 1
     fi
 fi
