@@ -4,7 +4,7 @@ A simple script to run [CAMEL-AI OWL](https://github.com/CAMEL-AI-org/camelAiOwl
 
 ## Quick Start
 
-1. Clone this repository:
+1. Clone this repository with submodules:
 ```bash
 # Method 1: Clone with submodules (recommended)
 git clone --recurse-submodules https://github.com/peabodyAdmin/owl-docker.git

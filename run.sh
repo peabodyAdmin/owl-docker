@@ -18,7 +18,13 @@ if [ ! -d "camelAiOwl" ] || [ ! -f "camelAiOwl/.git" ]; then
         echo "Example: git clone --recurse-submodules https://github.com/peabodyAdmin/owl-docker.git"
         exit 1
     fi
+if [ ! -f "camelAiOwl/.git" ]; then
+    echo "Initializing git submodule..."
+    git submodule init
 fi
+
+echo "Updating git submodule..."
+git submodule update
 
 # Copy .env to camelAiOwl directory
 cp .env camelAiOwl/.env
